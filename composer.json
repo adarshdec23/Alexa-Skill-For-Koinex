@@ -1,0 +1,9 @@
+{
+    "require": {
+        "minicodemonkey/amazon-alexa-php"  : "0.*",
+        "monolog/monolog"                  : "1.*"
+    },
+    "require-dev": {
+        "phpunit/phpunit"                  : "6.*"
+    }
+}
