@@ -2,12 +2,10 @@
 
 
 require_once __DIR__.'/../vendor/autoload.php';
-require_once __DIR__.'/../core/utils/utils.php';
 require_once __DIR__.'/../core/config/config.php';
 
 use Monolog\Logger;
 use Monolog\Handler\RotatingFileHandler;
-use Alexa\Request\Request;
 use Alexa\Request\Response;
 
 class LogicController{
@@ -33,18 +31,25 @@ class LogicController{
         if(!$inputData){
             return false;
         }
-        $cryptoToken = $this->getCryptoToken($inputData);
-
-        //TODO: after below
-        return $cryptoToken;
+        $alexaRequest = Alexa\Request\Request::fromData($inputData);
+        if($alexaRequest instanceof Alexa\Request\IntentRequest){
+            $inputCryptoToken = $alexaRequest->slots[Alexa_Constants::CRYPTO_SLOT];
+            $cryptoToken = $this->getCryptoToken($inputData);
+            return $cryptoToken;
+        }
+        $this->logger->error("Unknown Intent");
+        return false;            
     }
 
     function getCryptoToken($inputData){
-        $alexaRequest = Request::fromData($inputData);
-        if($alexaRequest instanceof IntentRequest){
-            echo $alexaRequest;
+        foreach(Crypto_Spoken_Values::ALL_CRYPTOS as $cryptoToken => $spokenValues){
+            foreach($spokenValues as $spokenValue){
+                if(strcasecmp($inputData, $spokenValue) == 0){
+                    return $cryptoToken;
+                }
+            }
         }
-        echo "Don't know what you are";
+        return Accepted_Crypto::UNKNOWN;
     }
 
     function parseRawData(){
