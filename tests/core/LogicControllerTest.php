@@ -1,9 +1,6 @@
 <?php
 
 
-/*require_once __DIR__."/../../core/LogicController.php";
-require_once __DIR__."/../../core/config/config.php";*/
-
 require __DIR__ . '/../../vendor/autoload.php';
 
 use adarshdec23\LogicController;

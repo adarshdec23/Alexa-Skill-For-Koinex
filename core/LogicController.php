@@ -1,11 +1,6 @@
 <?php
 
 
-/*require_once __DIR__.'/../vendor/autoload.php';
-require_once __DIR__.'/../core/config/config.php';*/
-
-use Alexa\Request\Response;
-
 namespace adarshdec23;
 
 class LogicController{
@@ -31,10 +26,10 @@ class LogicController{
         if(!$inputData){
             return false;
         }
-        $alexaRequest = Alexa\Request\Request::fromData($inputData);
-        if($alexaRequest instanceof Alexa\Request\IntentRequest){
-            $inputCryptoToken = $alexaRequest->slots[Alexa_Constants::CRYPTO_SLOT];
-            $cryptoToken = $this->getCryptoToken($inputData);
+        $alexaRequest = \Alexa\Request\Request::fromData($inputData);
+        if($alexaRequest instanceof \Alexa\Request\IntentRequest){
+            $inputCryptoToken = $alexaRequest->slots[Config\Alexa_Constants::CRYPTO_SLOT];
+            $cryptoToken = $this->getCryptoToken($inputCryptoToken);
             return $cryptoToken;
         }
         $this->logger->error("Unknown Intent");
@@ -69,11 +64,12 @@ class LogicController{
     }
 
     function execute(){
-        $inputData = $this->parseInput();
-        if($inputData == false){
+        $inputCryptoToken = $this->parseInput();
+        if($inputCryptoToken == false){
             //Error already logged
             return false;
         }
-        echo "The token is: ".$inputData;
+        $koinexApi = new Koinex\LogicKoinexAPI();
+        $koinexApi->execute($inputCryptoToken);
     }
 }
