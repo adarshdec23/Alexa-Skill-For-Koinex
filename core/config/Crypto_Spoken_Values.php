@@ -1,22 +1,6 @@
 <?php
 
-namespace Alexa_Koinex;
-
-//Monolog config
-abstract class Monolog_Config{
-    const MAX_FILES = 7;
-    const LOG_FILE  = 'alex_koinex.log';
-}
-
-//Crypto token config
-abstract class Accepted_Crypto{
-    const UNKNOWN       = -1;
-    const ETHEREUM      = 0;
-    const BITCOIN       = 1;
-    const RIPPLE        = 2;
-    const BITCOINCASH   = 3;
-    const LITECOIN      = 4;
-}
+namespace adarshdec23\Config;
 
 abstract class Crypto_Spoken_Values{
     const ALL_CRYPTOS = [
@@ -50,8 +34,4 @@ abstract class Crypto_Spoken_Values{
             "B.C.H"
         ]
     ];
-}
-
-abstract class Alexa_Constants{
-    const CRYPTO_SLOT = "CryptoCurrencyIntentSlot";
 }

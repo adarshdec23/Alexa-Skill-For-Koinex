@@ -15,6 +15,10 @@ class ComposerStaticInit1a512e1722eb3f8d3c1393ef127b90ee
         array (
             'phpDocumentor\\Reflection\\' => 25,
         ),
+        'a' => 
+        array (
+            'adarshdec23\\' => 12,
+        ),
         'W' => 
         array (
             'Webmozart\\Assert\\' => 17,
@@ -44,6 +48,10 @@ class ComposerStaticInit1a512e1722eb3f8d3c1393ef127b90ee
             0 => __DIR__ . '/..' . '/phpdocumentor/reflection-common/src',
             1 => __DIR__ . '/..' . '/phpdocumentor/type-resolver/src',
             2 => __DIR__ . '/..' . '/phpdocumentor/reflection-docblock/src',
+        ),
+        'adarshdec23\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/core',
         ),
         'Webmozart\\Assert\\' => 
         array (

@@ -1,22 +1,22 @@
 <?php
 
 
-require_once __DIR__.'/../vendor/autoload.php';
-require_once __DIR__.'/../core/config/config.php';
+/*require_once __DIR__.'/../vendor/autoload.php';
+require_once __DIR__.'/../core/config/config.php';*/
 
-use Monolog\Logger;
-use Monolog\Handler\RotatingFileHandler;
 use Alexa\Request\Response;
+
+namespace adarshdec23;
 
 class LogicController{
     var $logger;
     function __construct(){
         try{
-            $this->logger = new Logger('app_log'); 
-            $this->logger->pushHandler( new RotatingFileHandler(
-                /* file name: */        __DIR__.'/../logs/'.Monolog_Config::LOG_FILE,
-                /* max day to keep*/    Monolog_Config::MAX_FILES,
-                /* max log level*/      Logger::ERROR
+            $this->logger = new \Monolog\Logger('app_log'); 
+            $this->logger->pushHandler( new \Monolog\Handler\RotatingFileHandler(
+                /* file name: */        __DIR__.'/../logs/'.Config\Monolog_Config::LOG_FILE,
+                /* max day to keep*/    Config\Monolog_Config::MAX_FILES,
+                /* max log level*/      \Monolog\Logger::ERROR
             ));
         }
         catch (\Exception $e){
@@ -42,14 +42,14 @@ class LogicController{
     }
 
     function getCryptoToken($inputData){
-        foreach(Crypto_Spoken_Values::ALL_CRYPTOS as $cryptoToken => $spokenValues){
+        foreach(Config\Crypto_Spoken_Values::ALL_CRYPTOS as $cryptoToken => $spokenValues){
             foreach($spokenValues as $spokenValue){
                 if(strcasecmp($inputData, $spokenValue) == 0){
                     return $cryptoToken;
                 }
             }
         }
-        return Accepted_Crypto::UNKNOWN;
+        return Config\Accepted_Crypto::UNKNOWN;
     }
 
     function parseRawData(){
