@@ -16,7 +16,7 @@ class LogicControllerTest extends \PHPUnit_Framework_TestCase{
 function testGetCryptoTokenSuccess($inputData, $expectedOutput){
         $this->logicController = new LogicController();
         $result = $this->logicController->getCryptoToken($inputData);
-        $this->assertEquals($expectedOutput, $result);
+        $this->assertSame($expectedOutput, $result);
 }
 
 function providerGetCryptoTokenSuccess(){
@@ -35,7 +35,7 @@ function providerGetCryptoTokenSuccess(){
 function testGetCryptoTokenUnknown($inputData, $expectedOutput){
     $this->logicController = new LogicController();
     $result = $this->logicController->getCryptoToken($inputData);
-    $this->assertEquals($expectedOutput, $result);
+    $this->assertSame($expectedOutput, $result);
 }
 
 function providerGetCryptoTokenUnknown(){
