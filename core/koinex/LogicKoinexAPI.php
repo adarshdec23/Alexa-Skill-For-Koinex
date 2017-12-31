@@ -21,13 +21,15 @@ class LogicKoinexAPI{
         }   
     }
 
-    function execute($inputCrytoToken){
+    function getValueFor($inputCryptoToken){
         $apiReturnData = $this->makeApiCall();
         if($apiReturnData == false){
             $this->logger->error("API call failed.");
             return false;
         }
-        $cryptoValue = $this->getCryptoValue($apiReturnData, $inputCrytoToken);
+
+        //Error already logged.
+        return $this->extractCryptoValue($apiReturnData, $inputCryptoToken);
     }
 
     function makeApiCall(){
@@ -45,11 +47,24 @@ class LogicKoinexAPI{
         return $apiReturnData;
     }
 
-    function getCryptoValue($apiReturnData, $inputCrytoToken){
+    function extractCryptoValue($apiReturnData, $inputCryptoToken){
         $arrayReturnData = json_decode($apiReturnData, true);
         if($arrayReturnData == null){
             $this->logger->error("Invalid response by Koinex.");
             return false;
         }
+        $cryptoValue = $arrayReturnData["prices"][
+            //Map internal data to Koinex Expected Values
+            Koinex_Config::Koinex_Accepted_Crypto[$inputCryptoToken]
+        ];
+        if($cryptoValue == null){
+            $this->logger->error($inputCryptoToken);
+            $this->logger->error("Data missing for ".Koinex_Config::Koinex_Accepted_Crypto[$inputCryptoToken], $arrayReturnData);
+            return false;
+        }
+        /* We don't check whether the value returned by Koinex is valid.
+        *  Hell, we don't even care if it's a number. Just return it.
+        */
+        return $cryptoValue;
     }
 }
