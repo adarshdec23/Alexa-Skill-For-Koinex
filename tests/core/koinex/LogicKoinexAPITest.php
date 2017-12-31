@@ -146,9 +146,11 @@ class LogicKoinexAPITest extends \PHPUnit_Framework_TestCase{
      * @dataProvider providerExtractCryptoValueFail
      */
     function testExtractCryptoValueFail($apiReturnData, $inputCryptoToken, $expectedOutput){
-        // Warning: notice, strict. We handle this oursel
+        // Warning: notice, strict. We handle this ourselves
         PHPUnit_Framework_Error_Warning::$enabled = FALSE;
         PHPUnit_Framework_Error_Notice::$enabled = FALSE;
+        error_reporting(E_ALL & ~E_NOTICE);
+        
         $this->koinexApi = new LogicKoinexAPI();
         $result = $this->koinexApi->extractCryptoValue($apiReturnData, $inputCryptoToken);
         $this->assertSame($expectedOutput, $result);
