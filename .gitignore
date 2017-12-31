@@ -2,3 +2,5 @@ logs
 logs/*
 .vscode
 .vscode/*
+vendor
+vendor/*
