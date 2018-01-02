@@ -66,30 +66,36 @@ class LogicController{
     function buildOutputResponse($inputCryptoToken, $koinexValue){
         $response = new \Alexa\Response\Response;
         $response->respond("The price of ". $inputCryptoToken. " is ". $koinexValue." rupees.");
-        header('Content-Type: application/json');
-        echo json_encode($response->render());
+        //Our job here is done. Nothing more to do ლ(▀̿̿Ĺ̯̿̿▀̿ლ)
+        $response->shouldEndSession = true;
+        return $response;
     }
 
     function buildOutputReprompt($promptMessage){
         $response = new \Alexa\Response\Response;
         $response->reprompt($promptMessage);
+        $response->shouldEndSession = false;
+        return $response;
+    }
+
+    function sendResponse($response){
         header('Content-Type: application/json');
         echo json_encode($response->render());
     }
 
     function execute(){
+        $finalResponseToSend = null;
         $inputCryptoToken = $this->parseInput();
         if($inputCryptoToken == false){
             //Error already logged
-            $this->buildOutputReprompt(Config\Alexa_Constants::ERROR_UNABLE_TO_PARSE);
-            return false;
+            $finalResponseToSend =$this->buildOutputReprompt(Config\Alexa_Constants::ERROR_UNABLE_TO_PARSE);
         }
         $koinexApi = new Koinex\LogicKoinexAPI();
         $koinexValue = $koinexApi->getValueFor($inputCryptoToken);
         if($koinexValue == false){
-            $this->buildOutputReprompt(Config\Alexa_Constants::ERROR_TOKEN_NOT_FOUND);
-            return false;
+            $finalResponseToSend = $this->buildOutputReprompt(Config\Alexa_Constants::ERROR_TOKEN_NOT_FOUND);
         }
-        $this->buildOutputResponse($inputCryptoToken, $koinexValue);
+        $finalResponseToSend = $this->buildOutputResponse($inputCryptoToken, $koinexValue);
+        $this->sendResponse($response);
     }
 }
