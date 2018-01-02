@@ -62,12 +62,21 @@ function testBuildOutputResponse(){
     $this->assertTrue($resultResponseObject->shouldEndSession);
 }
 
-function testBuildOutputReprompt(){
+function testBuildOutputRepromptUnableToParse(){
     $this->logicController = new LogicController();
     $resultResponseObject = $this->logicController->buildOutputReprompt(Alexa_Constants::ERROR_UNABLE_TO_PARSE);
 
     //Check only the fields we care about
     $this->assertSame($resultResponseObject->reprompt->outputSpeech->text, Alexa_Constants::ERROR_UNABLE_TO_PARSE);
+    $this->assertFalse($resultResponseObject->shouldEndSession);
+}
+
+function testBuildOutputRepromptHelp(){
+    $this->logicController = new LogicController();
+    $resultResponseObject = $this->logicController->buildOutputReprompt(Alexa_Constants::HELP_EXAMPLE);
+
+    //Check only the fields we care about
+    $this->assertSame($resultResponseObject->reprompt->outputSpeech->text, Alexa_Constants::HELP_EXAMPLE);
     $this->assertFalse($resultResponseObject->shouldEndSession);
 }
 

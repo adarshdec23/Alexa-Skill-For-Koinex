@@ -28,9 +28,9 @@ class LogicController{
         }
         $alexaRequest = \Alexa\Request\Request::fromData($inputData);
         if($alexaRequest instanceof \Alexa\Request\IntentRequest){
-            $inputCryptoToken = $alexaRequest->slots[Config\Alexa_Constants::CRYPTO_SLOT];
-            $cryptoToken = $this->getCryptoToken($inputCryptoToken);
-            return $cryptoToken;
+            $returnObject['intentType'] = $alexaRequest->intentName;
+            $returnObject['alexaRequest'] = $alexaRequest;
+            return $returnObject;
         }
         $this->logger->error("Unknown Intent");
         return false;            
@@ -83,19 +83,47 @@ class LogicController{
         echo json_encode($response->render());
     }
 
-    function execute(){
-        $finalResponseToSend = null;
-        $inputCryptoToken = $this->parseInput();
-        if($inputCryptoToken == false){
-            //Error already logged
-            $finalResponseToSend =$this->buildOutputReprompt(Config\Alexa_Constants::ERROR_UNABLE_TO_PARSE);
-        }
+    function executeKoinex($alexaRequest){
+        $inputCryptoToken = $alexaRequest->slots[Config\Alexa_Constants::CRYPTO_SLOT];
+        $inputCryptoToken = $this->getCryptoToken($inputCryptoToken);
         $koinexApi = new Koinex\LogicKoinexAPI();
         $koinexValue = $koinexApi->getValueFor($inputCryptoToken);
         if($koinexValue == false){
             $finalResponseToSend = $this->buildOutputReprompt(Config\Alexa_Constants::ERROR_TOKEN_NOT_FOUND);
         }
         $finalResponseToSend = $this->buildOutputResponse($inputCryptoToken, $koinexValue);
-        $this->sendResponse($response);
+        $this->sendResponse($finalResponseToSend);
+    }
+
+    function executeHelp(){
+        $finalResponseToSend = $this->buildOutputReprompt(Config\Alexa_Constants::HELP_EXAMPLE);
+        $this->sendResponse($finalResponseToSend);
+    }
+
+    function findAndExecuteIntentType($compositeObject){
+        switch ($compositeObject['intentType']) {
+            case 'EtherIntent':
+                $this->executeKoinex($compositeObject['alexaRequest']);
+                break;
+            case 'Alexa.Help':
+                $this->executeHelp();
+                break;
+            default:
+                //Nothing to do, so call help
+                $this->executeHelp();
+                break;
+        }
+    }
+
+    function execute(){
+        $finalResponseToSend = null;
+        $compositeObject = $this->parseInput();
+        if($compositeObject == false){
+            //Error already logged
+            $finalResponseToSend =$this->buildOutputReprompt(Config\Alexa_Constants::ERROR_UNABLE_TO_PARSE);
+            $this->sendResponse($finalResponseToSend);
+            return false;
+        }
+        $this->findAndExecuteIntentType($compositeObject);
     }
 }
