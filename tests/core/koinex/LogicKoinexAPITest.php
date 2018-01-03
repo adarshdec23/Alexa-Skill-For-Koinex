@@ -5,7 +5,7 @@ require __DIR__ . '/../../../vendor/autoload.php';
 use adarshdec23\Koinex\LogicKoinexAPI;
 use adarshdec23\Config\Accepted_Crypto;
 
-class LogicKoinexAPITest extends \PHPUnit_Framework_TestCase{
+class LogicKoinexAPITest extends \PHPUnit\Framework\TestCase{
 
     private static $koinexReturnJSONCorrect = '
     {

@@ -7,7 +7,7 @@ use adarshdec23\LogicController;
 use adarshdec23\Config\Accepted_Crypto;
 use adarshdec23\Config\Alexa_Constants;
 
-class LogicControllerTest extends \PHPUnit_Framework_TestCase{
+class LogicControllerTest extends \PHPUnit\Framework\TestCase{
 
 /**
 * @param string $inputData
