@@ -37,14 +37,6 @@ abstract class Request {
 		$this->validateSignature();
 	}
 
-	public static function handleException($exception){
-		http_response_code(400);
-		/**
-		 * Debug only
-		 * echo $exception;
-		 * */
-		die();
-	}
 
 	private function validateCertificateUrl($url){
 		$url=parse_url($url);
@@ -53,7 +45,7 @@ abstract class Request {
 		$valid&=(!isset($url["port"])) || (isset($url["port"]) && ($url["port"]==443 || $url["port"]==null));
 		$valid&=strpos($url["path"],"/echo.api/")===0;
 		if(!$valid)
-			self::handleException(new InvalidArgumentException('Wrong Signature certificate url'));
+			throw new InvalidArgumentException('Wrong Signature certificate url');
 		
 	}
 
@@ -67,10 +59,10 @@ abstract class Request {
 		$validFrom=$ssl['validFrom_time_t'];
 		$validTo=$ssl['validTo_time_t'];
 		if($validFrom>time() || $validTo<time()){
-			self::handleException(new InvalidArgumentException('Wrong Signature timestamps'));
+			throw new InvalidArgumentException('Wrong Signature timestamps');
 		}
 		if($ssl["extensions"]["subjectAltName"]!=self::SAN_NAME){
-			self::handleException( new InvalidArgumentException('Wrong Subject Alternative Names'));
+			throw new InvalidArgumentException('Wrong Subject Alternative Names');
 		}
 		$signature=base64_decode(getallheaders()["Signature"]);
 		$result='';
@@ -78,7 +70,7 @@ abstract class Request {
 		openssl_public_decrypt($signature,$result,$key);
 		$result=substr($result,15);
 		if($result!=$hash){
-			self::handleException(new InvalidArgumentException('Wrong Signature hash'));
+			throw new InvalidArgumentException('Wrong Signature hash');
 		}
 	}
 
@@ -88,7 +80,7 @@ abstract class Request {
 		$differenceInSeconds = $now->getTimestamp() - $this->timestamp->getTimestamp();
 
 		if ($differenceInSeconds > self::TIMESTAMP_VALID_TOLERANCE_SECONDS) {
-			self::handleException(new InvalidArgumentException('Request timestamp was too old. Possible replay attack.'));
+			throw new InvalidArgumentException('Request timestamp was too old. Possible replay attack.');
 		}
 	}
 }

@@ -3,6 +3,9 @@
 
 namespace adarshdec23;
 
+use PHPUnit\Runner\Exception;
+
+
 class LogicController{
     var $logger;
     function __construct(){
@@ -27,7 +30,20 @@ class LogicController{
             return false;
         }
         $alexaRequest = \Alexa\Request\Request::fromData($inputData);
-        $alexaRequest->validate();
+        try{
+            $alexaRequest->validate();
+        }
+        catch(\Exception $exception){
+            /**
+             * This means that there is a problem with the request. 
+             * Ideally we should have a separate view for this, but
+             * considering that we only need to throw a 400 error, 
+             * this should suffice.
+             */
+            http_response_code(400);
+		    $this->logger->error($exception);
+		    die();
+        }
         if($alexaRequest instanceof \Alexa\Request\IntentRequest){
             $returnObject['intentType'] = $alexaRequest->intentName;
             $returnObject['alexaRequest'] = $alexaRequest;
