@@ -27,6 +27,7 @@ class LogicController{
             return false;
         }
         $alexaRequest = \Alexa\Request\Request::fromData($inputData);
+        $alexaRequest->validate();
         if($alexaRequest instanceof \Alexa\Request\IntentRequest){
             $returnObject['intentType'] = $alexaRequest->intentName;
             $returnObject['alexaRequest'] = $alexaRequest;
