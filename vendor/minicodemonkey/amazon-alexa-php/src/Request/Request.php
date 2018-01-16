@@ -7,7 +7,8 @@ use InvalidArgumentException;
 use DateTime;
 
 abstract class Request {
-	const TIMESTAMP_VALID_TOLERANCE_SECONDS = 15;
+	const TIMESTAMP_VALID_TOLERANCE_SECONDS = 150;
+	const SAN_NAME="DNS:echo-api.amazon.com";
 
 	public $requestId;
 	public $timestamp;
