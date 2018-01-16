@@ -37,7 +37,7 @@ class LogicController{
             /**
              * This means that there is a problem with the request. 
              * Ideally we should have a separate view for this, but
-             * considering that we only need to throw a 400 error, 
+             * considering that we only need to throw a 400 error 
              * this should suffice.
              */
             http_response_code(400);
@@ -103,13 +103,18 @@ class LogicController{
     function executeKoinex($alexaRequest){
         $inputCryptoToken = $alexaRequest->slots[Config\Alexa_Constants::CRYPTO_SLOT];
         $inputCryptoToken = $this->getCryptoToken($inputCryptoToken);
+        if($inputCryptoToken === Config\Accepted_Crypto::UNKNOWN){
+            $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_TOKEN_NOT_FOUND));
+            return false;
+        }
         $koinexApi = new Koinex\LogicKoinexAPI();
         $koinexValue = $koinexApi->getValueFor($inputCryptoToken);
         if($koinexValue == false){
-            $finalResponseToSend = $this->buildOutputReprompt(Config\Alexa_Constants::ERROR_TOKEN_NOT_FOUND);
+            $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_TOKEN_NOT_FOUND));
+            return false;
         }
-        $finalResponseToSend = $this->buildOutputResponse($inputCryptoToken, $koinexValue);
-        $this->sendResponse($finalResponseToSend);
+        $this->sendResponse($this->buildOutputResponse($inputCryptoToken, $koinexValue));
+        return true;
     }
 
     function executeHelp(){
@@ -122,7 +127,7 @@ class LogicController{
             case 'EtherIntent':
                 $this->executeKoinex($compositeObject['alexaRequest']);
                 break;
-            case 'Alexa.Help':
+            case 'AMAZON.HelpIntent':
                 $this->executeHelp();
                 break;
             default:
