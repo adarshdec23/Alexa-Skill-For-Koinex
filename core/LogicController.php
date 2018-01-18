@@ -4,6 +4,7 @@
 namespace adarshdec23;
 
 use PHPUnit\Runner\Exception;
+use adarshdec23\Config\Alexa_Constants;
 
 
 class LogicController{
@@ -14,7 +15,7 @@ class LogicController{
             $this->logger->pushHandler( new \Monolog\Handler\RotatingFileHandler(
                 /* file name: */        __DIR__.'/../logs/'.Config\Monolog_Config::LOG_FILE,
                 /* max day to keep*/    Config\Monolog_Config::MAX_FILES,
-                /* max log level*/      \Monolog\Logger::ERROR
+                /* max log level*/      \Monolog\Logger::INFO
             ));
         }
         catch (\Exception $e){
@@ -31,7 +32,7 @@ class LogicController{
         }
         $alexaRequest = \Alexa\Request\Request::fromData($inputData);
         try{
-            $alexaRequest->validate();
+            //$alexaRequest->validate();
         }
         catch(\Exception $exception){
             /**
@@ -45,11 +46,22 @@ class LogicController{
 		    die();
         }
         if($alexaRequest instanceof \Alexa\Request\IntentRequest){
+            $returnObject['requestType'] = 'IntentRequest';
             $returnObject['intentType'] = $alexaRequest->intentName;
             $returnObject['alexaRequest'] = $alexaRequest;
             return $returnObject;
         }
-        $this->logger->error("Unknown Intent");
+        if($alexaRequest instanceof \Alexa\Request\LaunchRequest){
+            $returnObject['requestType'] = 'LaunchRequest';
+            $returnObject['alexaRequest'] = $alexaRequest;
+            return $returnObject;
+        }
+        if($alexaRequest instanceof \Alexa\Request\SessionEndedRequest){
+            $returnObject['requestType'] = 'SessionEndedRequest';
+            $returnObject['alexaRequest'] = $alexaRequest;
+            return $returnObject;
+        }
+        $this->logger->error("Unknown Request: ".print_r($inputData));
         return false;            
     }
 
@@ -84,6 +96,13 @@ class LogicController{
         $response = new \Alexa\Response\Response;
         $response->respond("The price of ". $inputCryptoToken. " is ". $koinexValue." rupees.");
         //Our job here is done. Nothing more to do ლ(▀̿̿Ĺ̯̿̿▀̿ლ)
+        $response->shouldEndSession = true;
+        return $response;
+    }
+
+    function buildPlainOutputResponse($responseMessage){
+        $response = new \Alexa\Response\Response;
+        $response->respond($responseMessage);
         $response->shouldEndSession = true;
         return $response;
     }
@@ -137,6 +156,32 @@ class LogicController{
         }
     }
 
+    private function findAndExecuteRequestType($compositeObject)
+    {
+        if(!isset($compositeObject['requestType'])){
+            $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_WITH_REQUEST));
+            return false;
+        }
+        switch ($compositeObject['requestType']) {
+            case 'IntentRequest':
+                $this->logger->info("Got an intent request");
+                $this->findAndExecuteIntentType($compositeObject);
+                break;
+            case 'LaunchRequest':
+                $this->logger->info("Got a launch request");
+                $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::LAUNCH_MESSAGE));
+                break;
+            case 'SessionEndedRequest':
+                $this->logger->info("Got a session end request");
+                $this->sendResponse($this->buildPlainOutputResponse(Config\Alexa_Constants::SESSION_END_MESSAGE));
+                break;
+            default:
+                $this->logger->error("Got an unknown request: ".print_r($compositeObject, true));
+                $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_WITH_REQUEST));
+                break;
+        }
+    }
+
     function execute(){
         $finalResponseToSend = null;
         $compositeObject = $this->parseInput();
@@ -146,6 +191,6 @@ class LogicController{
             $this->sendResponse($finalResponseToSend);
             return false;
         }
-        $this->findAndExecuteIntentType($compositeObject);
+        $this->findAndExecuteRequestType($compositeObject);
     }
 }
