@@ -3,7 +3,6 @@
 
 namespace adarshdec23;
 
-use PHPUnit\Runner\Exception;
 use adarshdec23\Config\Alexa_Constants;
 
 
@@ -32,7 +31,7 @@ class LogicController{
         }
         $alexaRequest = \Alexa\Request\Request::fromData($inputData);
         try{
-            //$alexaRequest->validate();
+            $alexaRequest->validate();
         }
         catch(\Exception $exception){
             /**
@@ -92,27 +91,6 @@ class LogicController{
         return $arrayInput;
     }
 
-    function buildOutputResponse($responseMessage){
-        //Our job here is done. Nothing more to do ლ(▀̿̿Ĺ̯̿̿▀̿ლ)
-        $response = new \Alexa\Response\Response;
-        $response->respond($responseMessage);
-        $response->shouldEndSession = true;
-        return $response;
-    }
-
-    function buildOutputReprompt($responseMessage, $promptMessage){
-        $response = new \Alexa\Response\Response;
-        $response->reprompt($promptMessage);
-        $response->respond($responseMessage);
-        $response->shouldEndSession = false;
-        return $response;
-    }
-
-    function sendResponse($response){
-        header('Content-Type: application/json');
-        echo json_encode($response->render());
-    }
-
     function executeKoinex($alexaRequest){
         $inputCryptoToken = $alexaRequest->slots[Config\Alexa_Constants::CRYPTO_SLOT];
         $inputCryptoToken = $this->getCryptoToken($inputCryptoToken);
@@ -143,6 +121,10 @@ class LogicController{
                 break;
             case 'AMAZON.HelpIntent':
                 $this->executeHelp();
+                break;
+            case 'AMAZON.CancelIntent':
+            case 'AMAZON.StopIntent':
+                $this->sendResponse($this->buildOutputResponse(Config\Alexa_Constants::SESSION_END_MESSAGE));
                 break;
             default:
                 //Nothing to do, so call help
