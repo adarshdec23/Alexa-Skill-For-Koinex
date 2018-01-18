@@ -95,23 +95,23 @@ class LogicController{
         $inputCryptoToken = $alexaRequest->slots[Config\Alexa_Constants::CRYPTO_SLOT];
         $inputCryptoToken = $this->getCryptoToken($inputCryptoToken);
         if($inputCryptoToken === Config\Accepted_Crypto::UNKNOWN){
-            $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_TOKEN_NOT_FOUND, Config\Alexa_Constants::LAUNCH_MESSAGE));
+            OutputUtils::sendResponse(OutputUtils::buildOutputReprompt(Config\Alexa_Constants::ERROR_TOKEN_NOT_FOUND, Config\Alexa_Constants::LAUNCH_MESSAGE));
             return false;
         }
         $koinexApi = new Koinex\LogicKoinexAPI();
         $koinexValue = $koinexApi->getValueFor($inputCryptoToken);
         if($koinexValue == false){
-            $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_TOKEN_NOT_FOUND, Config\Alexa_Constants::LAUNCH_MESSAGE));
+            OutputUtils::sendResponse(OutputUtils::buildOutputReprompt(Config\Alexa_Constants::ERROR_TOKEN_NOT_FOUND, Config\Alexa_Constants::LAUNCH_MESSAGE));
             return false;
         }
         $outputMessage = "The price of ". $inputCryptoToken. " is ". $koinexValue." rupees.";
-        $this->sendResponse($this->buildOutputResponse($outputMessage));
+        OutputUtils::sendResponse(OutputUtils::buildOutputResponse($outputMessage));
         return true;
     }
 
     function executeHelp(){
-        $finalResponseToSend = $this->buildOutputReprompt(Config\Alexa_Constants::HELP_EXAMPLE, Config\Alexa_Constants::LAUNCH_MESSAGE);
-        $this->sendResponse($finalResponseToSend);
+        $finalResponseToSend = OutputUtils::buildOutputReprompt(Config\Alexa_Constants::HELP_EXAMPLE, Config\Alexa_Constants::LAUNCH_MESSAGE);
+        OutputUtils::sendResponse($finalResponseToSend);
     }
 
     function findAndExecuteIntentType($compositeObject){
@@ -124,7 +124,7 @@ class LogicController{
                 break;
             case 'AMAZON.CancelIntent':
             case 'AMAZON.StopIntent':
-                $this->sendResponse($this->buildOutputResponse(Config\Alexa_Constants::SESSION_END_MESSAGE));
+                OutputUtils::sendResponse(OutputUtils::buildOutputResponse(Config\Alexa_Constants::SESSION_END_MESSAGE));
                 break;
             default:
                 //Nothing to do, so call help
@@ -136,7 +136,7 @@ class LogicController{
     private function findAndExecuteRequestType($compositeObject)
     {
         if(!isset($compositeObject['requestType'])){
-            $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_WITH_REQUEST, Config\Alexa_Constants::LAUNCH_MESSAGE));
+            OutputUtils::sendResponse(OutputUtils::buildOutputReprompt(Config\Alexa_Constants::ERROR_WITH_REQUEST, Config\Alexa_Constants::LAUNCH_MESSAGE));
             return false;
         }
         switch ($compositeObject['requestType']) {
@@ -146,15 +146,15 @@ class LogicController{
                 break;
             case 'LaunchRequest':
                 $this->logger->info("Got a launch request");
-                $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::LAUNCH_MESSAGE, Config\Alexa_Constants::LAUNCH_MESSAGE));
+                OutputUtils::sendResponse(OutputUtils::buildOutputReprompt(Config\Alexa_Constants::LAUNCH_MESSAGE, Config\Alexa_Constants::LAUNCH_MESSAGE));
                 break;
             case 'SessionEndedRequest':
                 $this->logger->info("Got a session end request");
-                $this->sendResponse($this->buildOutputResponse(Config\Alexa_Constants::SESSION_END_MESSAGE));
+                OutputUtils::sendResponse(OutputUtils::buildOutputResponse(Config\Alexa_Constants::SESSION_END_MESSAGE));
                 break;
             default:
                 $this->logger->error("Got an unknown request: ".print_r($compositeObject, true));
-                $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_WITH_REQUEST, Config\Alexa_Constants::LAUNCH_MESSAGE));
+                OutputUtils::sendResponse(OutputUtils::buildOutputReprompt(Config\Alexa_Constants::ERROR_WITH_REQUEST, Config\Alexa_Constants::LAUNCH_MESSAGE));
                 break;
         }
     }
@@ -164,8 +164,8 @@ class LogicController{
         $compositeObject = $this->parseInput();
         if($compositeObject == false){
             //Error already logged
-            $finalResponseToSend =$this->buildOutputReprompt(Config\Alexa_Constants::ERROR_UNABLE_TO_PARSE, Config\Alexa_Constants::LAUNCH_MESSAGE);
-            $this->sendResponse($finalResponseToSend);
+            $finalResponseToSend =OutputUtils::buildOutputReprompt(Config\Alexa_Constants::ERROR_UNABLE_TO_PARSE, Config\Alexa_Constants::LAUNCH_MESSAGE);
+            OutputUtils::sendResponse($finalResponseToSend);
             return false;
         }
         $this->findAndExecuteRequestType($compositeObject);
