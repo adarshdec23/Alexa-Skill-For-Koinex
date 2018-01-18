@@ -92,24 +92,18 @@ class LogicController{
         return $arrayInput;
     }
 
-    function buildOutputResponse($inputCryptoToken, $koinexValue){
-        $response = new \Alexa\Response\Response;
-        $response->respond("The price of ". $inputCryptoToken. " is ". $koinexValue." rupees.");
+    function buildOutputResponse($responseMessage){
         //Our job here is done. Nothing more to do ლ(▀̿̿Ĺ̯̿̿▀̿ლ)
-        $response->shouldEndSession = true;
-        return $response;
-    }
-
-    function buildPlainOutputResponse($responseMessage){
         $response = new \Alexa\Response\Response;
         $response->respond($responseMessage);
         $response->shouldEndSession = true;
         return $response;
     }
 
-    function buildOutputReprompt($promptMessage){
+    function buildOutputReprompt($responseMessage, $promptMessage){
         $response = new \Alexa\Response\Response;
         $response->reprompt($promptMessage);
+        $response->respond($responseMessage);
         $response->shouldEndSession = false;
         return $response;
     }
@@ -123,21 +117,22 @@ class LogicController{
         $inputCryptoToken = $alexaRequest->slots[Config\Alexa_Constants::CRYPTO_SLOT];
         $inputCryptoToken = $this->getCryptoToken($inputCryptoToken);
         if($inputCryptoToken === Config\Accepted_Crypto::UNKNOWN){
-            $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_TOKEN_NOT_FOUND));
+            $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_TOKEN_NOT_FOUND, Config\Alexa_Constants::LAUNCH_MESSAGE));
             return false;
         }
         $koinexApi = new Koinex\LogicKoinexAPI();
         $koinexValue = $koinexApi->getValueFor($inputCryptoToken);
         if($koinexValue == false){
-            $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_TOKEN_NOT_FOUND));
+            $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_TOKEN_NOT_FOUND, Config\Alexa_Constants::LAUNCH_MESSAGE));
             return false;
         }
-        $this->sendResponse($this->buildOutputResponse($inputCryptoToken, $koinexValue));
+        $outputMessage = "The price of ". $inputCryptoToken. " is ". $koinexValue." rupees.";
+        $this->sendResponse($this->buildOutputResponse($outputMessage));
         return true;
     }
 
     function executeHelp(){
-        $finalResponseToSend = $this->buildOutputReprompt(Config\Alexa_Constants::HELP_EXAMPLE);
+        $finalResponseToSend = $this->buildOutputReprompt(Config\Alexa_Constants::HELP_EXAMPLE, Config\Alexa_Constants::LAUNCH_MESSAGE);
         $this->sendResponse($finalResponseToSend);
     }
 
@@ -159,7 +154,7 @@ class LogicController{
     private function findAndExecuteRequestType($compositeObject)
     {
         if(!isset($compositeObject['requestType'])){
-            $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_WITH_REQUEST));
+            $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_WITH_REQUEST, Config\Alexa_Constants::LAUNCH_MESSAGE));
             return false;
         }
         switch ($compositeObject['requestType']) {
@@ -169,15 +164,15 @@ class LogicController{
                 break;
             case 'LaunchRequest':
                 $this->logger->info("Got a launch request");
-                $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::LAUNCH_MESSAGE));
+                $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::LAUNCH_MESSAGE, Config\Alexa_Constants::LAUNCH_MESSAGE));
                 break;
             case 'SessionEndedRequest':
                 $this->logger->info("Got a session end request");
-                $this->sendResponse($this->buildPlainOutputResponse(Config\Alexa_Constants::SESSION_END_MESSAGE));
+                $this->sendResponse($this->buildOutputResponse(Config\Alexa_Constants::SESSION_END_MESSAGE));
                 break;
             default:
                 $this->logger->error("Got an unknown request: ".print_r($compositeObject, true));
-                $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_WITH_REQUEST));
+                $this->sendResponse($this->buildOutputReprompt(Config\Alexa_Constants::ERROR_WITH_REQUEST, Config\Alexa_Constants::LAUNCH_MESSAGE));
                 break;
         }
     }
@@ -187,7 +182,7 @@ class LogicController{
         $compositeObject = $this->parseInput();
         if($compositeObject == false){
             //Error already logged
-            $finalResponseToSend =$this->buildOutputReprompt(Config\Alexa_Constants::ERROR_UNABLE_TO_PARSE);
+            $finalResponseToSend =$this->buildOutputReprompt(Config\Alexa_Constants::ERROR_UNABLE_TO_PARSE, Config\Alexa_Constants::LAUNCH_MESSAGE);
             $this->sendResponse($finalResponseToSend);
             return false;
         }

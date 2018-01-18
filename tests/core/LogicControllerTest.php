@@ -55,7 +55,8 @@ function testBuildOutputResponse(){
     // End of data builder
 
     $this->logicController = new LogicController();
-    $resultResponseObject = $this->logicController->buildOutputResponse($inputCryptoToken, $koinexValue);
+    $responseMessage = "The price of ".$inputCryptoToken." is ".$koinexValue." rupees.";
+    $resultResponseObject = $this->logicController->buildOutputResponse($responseMessage);
 
     //Check only the fields we care about
     $this->assertSame($resultResponseObject->outputSpeech->text, "The price of Ethereum is 77780.0 rupees.");
@@ -64,19 +65,21 @@ function testBuildOutputResponse(){
 
 function testBuildOutputRepromptUnableToParse(){
     $this->logicController = new LogicController();
-    $resultResponseObject = $this->logicController->buildOutputReprompt(Alexa_Constants::ERROR_UNABLE_TO_PARSE);
+    $resultResponseObject = $this->logicController->buildOutputReprompt(Alexa_Constants::ERROR_UNABLE_TO_PARSE, Alexa_Constants::LAUNCH_MESSAGE);
 
     //Check only the fields we care about
-    $this->assertSame($resultResponseObject->reprompt->outputSpeech->text, Alexa_Constants::ERROR_UNABLE_TO_PARSE);
+    $this->assertSame($resultResponseObject->outputSpeech->text, Alexa_Constants::ERROR_UNABLE_TO_PARSE);
+    $this->assertSame($resultResponseObject->reprompt->outputSpeech->text, Alexa_Constants::LAUNCH_MESSAGE);
     $this->assertFalse($resultResponseObject->shouldEndSession);
 }
 
 function testBuildOutputRepromptHelp(){
     $this->logicController = new LogicController();
-    $resultResponseObject = $this->logicController->buildOutputReprompt(Alexa_Constants::HELP_EXAMPLE);
+    $resultResponseObject = $this->logicController->buildOutputReprompt(Alexa_Constants::HELP_EXAMPLE, Alexa_Constants::LAUNCH_MESSAGE);
 
     //Check only the fields we care about
-    $this->assertSame($resultResponseObject->reprompt->outputSpeech->text, Alexa_Constants::HELP_EXAMPLE);
+    $this->assertSame($resultResponseObject->outputSpeech->text, Alexa_Constants::HELP_EXAMPLE);
+    $this->assertSame($resultResponseObject->reprompt->outputSpeech->text, Alexa_Constants::LAUNCH_MESSAGE);
     $this->assertFalse($resultResponseObject->shouldEndSession);
 }
 
